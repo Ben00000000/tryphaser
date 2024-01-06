@@ -30,6 +30,8 @@ var game = new Phaser.Game(config);
 function preload() {
     this.load.image('sky', 'sky.png');
     this.load.spritesheet('dude', 'dude.png', { frameWidth: 113, frameHeight: 138 });
+    this.load.spritesheet('jumpdude', 'jumpdude.png', { frameWidth: 105, frameHeight: 138 });
+    this.load.spritesheet('idledude', 'idledude.png', { frameWidth: 90.5, frameHeight: 138 });
     this.load.image('ground', 'ground.png');
 }
 
@@ -54,7 +56,7 @@ function create() {
 
      // Set up player
      player = this.physics.add.sprite(100, 450, 'dude');
-     player.setBounce(0.2);
+     player.setBounce(0);
      player.setCollideWorldBounds(true);
 
 
@@ -79,6 +81,22 @@ function create() {
            frameRate: 10,
            repeat: -1
        });
+
+  this.anims.create({
+        key: 'jump',
+        frames: this.anims.generateFrameNumbers('jumpdude', { start: 0, end: 3, first: 0 }),
+        frameRate: 10,
+        repeat: -1  // Set repeat to -1 for continuous looping
+    });
+
+
+        this.anims.create({
+             key: 'idle',
+             frames: this.anims.generateFrameNumbers('idledude', { start: 0, end: 7, first: 0 }),
+             frameRate: 10,
+             repeat: -1  // Set repeat to -1 for continuous looping
+         });
+         player.anims.play('idle');
 
     // Follow the player with the camera
     this.cameras.main.startFollow(player, true, 0.5, 0.5);
@@ -128,28 +146,46 @@ function create() {
       });
   }
 
-  function update() {
-      // Update the position of the on-screen buttons with the camera
-      leftButton.x = 50 + this.cameras.main.scrollX;
-      rightButton.x = 150 + this.cameras.main.scrollX;
-      jumpButton.x = 650 + this.cameras.main.scrollX;
+function update() {
+    // Update the position of the on-screen buttons with the camera
+    leftButton.x = 50 + this.cameras.main.scrollX;
+    rightButton.x = 150 + this.cameras.main.scrollX;
+    jumpButton.x = 650 + this.cameras.main.scrollX;
 
-      // Player movement code
-      if (cursors.left.isDown) {
-          player.setVelocityX(-160);
-          player.flipX = true;
-          player.anims.play('left', true);
-      } else if (cursors.right.isDown) {
-          player.setVelocityX(160);
-          player.flipX = false;
-          player.anims.play('right', true);
-      } else {
-          player.setVelocityX(0);
-          player.anims.play('turn');
-      }
 
-      // Check for the jump key
-      if (cursors.up.isDown && player.body.onFloor()) {
-          player.setVelocityY(-300);  // Adjust the jump velocity as needed
-      }
-  }
+
+    // Player movement code
+    if (cursors.left.isDown) {
+        // Left movement
+        player.setVelocityX(-100);
+        player.flipX = true;
+        if (player.body.onFloor()) {
+            player.anims.play('left', true);
+        }
+    } else if (cursors.right.isDown) {
+        // Right movement
+        player.setVelocityX(100);
+        player.flipX = false;
+        if (player.body.onFloor()) {
+            player.anims.play('right', true);
+        }
+    } else {
+        // No movement, play the idle animation
+        player.setVelocityX(0);
+        if (player.body.onFloor()) {
+            player.anims.play('idle', true);
+        }
+    }
+
+    // Check for the jump key
+    if (cursors.up.isDown && player.body.onFloor()) {
+        // Player is on the ground and the jump key is pressed
+        player.setVelocityY(-300);
+        player.anims.play('jump', true);
+    } else if (!player.body.onFloor()) {
+        // Player is in the air, play the jump animation continuously
+        player.anims.play('jump', true);
+    }
+}
+
+
