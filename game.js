@@ -10,7 +10,7 @@ var config = {
     physics: {
         default: 'arcade',
         arcade: {
-            gravity: { y: 400 },
+            gravity: { y: 200 },
             debug: false
         }
     },
@@ -33,6 +33,7 @@ function preload() {
     this.load.spritesheet('jumpdude', 'jumpdude.png', { frameWidth: 105, frameHeight: 138 });
     this.load.spritesheet('idledude', 'idledude.png', { frameWidth: 90.5, frameHeight: 138 });
     this.load.image('ground', 'ground.png');
+    this.load.image('wall', 'wall.png');
 }
 
 function create() {
@@ -45,14 +46,16 @@ function create() {
     // Adjust camera bounds to follow the player within the world size
     this.cameras.main.setBounds(0, 0, bg.displayWidth * bg.scaleX, bg.displayHeight * bg.scaleY);
 
-  let wall = this.physics.add.staticSprite(3050, 5, 'ground').setOrigin(0, 0).setScale(6, 1).refreshBody();
+
 
     // Set physics world bounds to include the wall
     this.physics.world.setBounds(0, 0, 2000 + bg.displayWidth * bg.scaleX, bg.displayHeight * bg.scaleY);
 
   // Create ground
     let ground = this.physics.add.staticGroup();
-    ground.create(0, 700, 'ground').setOrigin(0, 0).setScale(6, 1).refreshBody();
+    ground.create(0, 700, 'ground').setOrigin(0, 0).setScale(100, 1).refreshBody();
+ // Create wall at the end of the ground
+    let wall = this.physics.add.staticSprite(8000, 10, 'wall').setOrigin(0, 0).setScale(8, 5.4).refreshBody();
 
      // Set up player
      player = this.physics.add.sprite(100, 450, 'dude');
@@ -152,19 +155,17 @@ function update() {
     rightButton.x = 150 + this.cameras.main.scrollX;
     jumpButton.x = 650 + this.cameras.main.scrollX;
 
-
-
     // Player movement code
     if (cursors.left.isDown) {
         // Left movement
-        player.setVelocityX(-100);
+        player.setVelocityX(-1600);
         player.flipX = true;
         if (player.body.onFloor()) {
             player.anims.play('left', true);
         }
     } else if (cursors.right.isDown) {
         // Right movement
-        player.setVelocityX(100);
+        player.setVelocityX(1600);
         player.flipX = false;
         if (player.body.onFloor()) {
             player.anims.play('right', true);
@@ -180,7 +181,7 @@ function update() {
     // Check for the jump key
     if (cursors.up.isDown && player.body.onFloor()) {
         // Player is on the ground and the jump key is pressed
-        player.setVelocityY(-300);
+        player.setVelocityY(-100);
         player.anims.play('jump', true);
     } else if (!player.body.onFloor()) {
         // Player is in the air, play the jump animation continuously
